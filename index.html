@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Quick Commerce Dispatch Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, #e5dbff 0%, #d0e1ff 50%, #c1f0ff 100%);
+  background-attachment: fixed;
+  color:#1e293b;
+  min-height:100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.header{
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 16px 28px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.header h1{
+  font-size:20px;
+  font-weight:800;
+  letter-spacing: -0.5px;
+  color: #0f172a;
+}
+.badge{
+  background: #eff6ff;
+  color:#1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding:3px 12px;
+  border-radius:99px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing: 0.5px;
+}
+
+/* ── Upload ── */
+#upload-zone{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 60px);padding:40px 20px}
+.entry-container{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:28px;
+  max-width:960px;
+  width:100%;
+}
+@media(max-width:768px){
+  .entry-container{
+    grid-template-columns:1fr;
+  }
+}
+.upload-box{
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 2px dashed #cbd5e1;
+  border-radius: 20px;
+  padding:48px 36px;
+  text-align:center;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+.upload-box:hover,.upload-box.drag{
+  border-color:#6366f1;
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04);
+  transform: translateY(-2px);
+}
+.upload-box .icon{font-size:44px;margin-bottom:14px}
+.upload-box h2{font-size:20px;color:#0f172a;margin-bottom:8px;font-weight:700}
+.upload-box p{font-size:13px;color:#64748b;margin-bottom:20px;line-height:1.5}
+.btn{
+  background: #6366f1;
+  color:#fff;
+  border:none;
+  padding:12px 30px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+  transition: transform .2s, box-shadow .2s, background-color .2s;
+}
+.btn:hover{
+  background: #4f46e5;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+}
+.btn:active{transform: translateY(1px)}
+#file-input{display:none}
+.upload-note{font-size:12px;color:#94a3b8;margin-top:14px}
+
+/* Google Sheets Connection Box */
+.sheet-box{
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 20px;
+  padding:48px 36px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+.sheet-box:hover{
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.05), 0 10px 10px -5px rgba(16, 185, 129, 0.02);
+  transform: translateY(-2px);
+}
+.sheet-box .icon{font-size:44px;margin-bottom:14px;text-align:center}
+.sheet-box h2{font-size:20px;color:#0f172a;margin-bottom:8px;font-weight:700;text-align:center}
+.sheet-box p{font-size:13px;color:#64748b;margin-bottom:20px;line-height:1.5;text-align:center}
+.sheet-input-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  width:100%;
+}
+.sheet-input{
+  width:100%;
+  padding:12px 16px;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  font-family:inherit;
+  font-size:13px;
+  outline:none;
+  transition: border-color .2s, box-shadow .2s;
+  background: #ffffff;
+  color:#1e293b;
+}
+.sheet-input:focus{
+  border-color:#10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+.btn-sheet{
+  background: #10b981;
+  color:#fff;
+  border:none;
+  padding:12px 24px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+  transition: transform .2s, box-shadow .2s, background-color .2s;
+  text-align:center;
+}
+.btn-sheet:hover{
+  background: #059669;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  transform: translateY(-1px);
+}
+.btn-sheet:active{transform: translateY(1px)}
+
+/* Quick Instructions Box */
+.instructions-card{
+  margin-top:16px;
+  background: rgba(239, 246, 255, 0.8);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding:14px;
+  font-size:11px;
+  color:#1e3a8a;
+  line-height:1.5;
+}
+.instructions-card h4{
+  font-weight:700;
+  margin-bottom:6px;
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+.instructions-card ol{
+  padding-left:14px;
+}
+
+/* ── Loading ── */
+#loading{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 60px);gap:18px}
+.spinner{width:42px;height:42px;border:3px solid rgba(0,0,0,0.05);border-top-color:#6366f1;border-radius:50%;animation:spin .8s cubic-bezier(0.4, 0, 0.2, 1) infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+
+/* ── Top bar: tabs + month filter ── */
+#dashboard{display:none}
+.top-bar{
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  padding:0 28px;
+  display:flex;
+  align-items:center;
+  gap:0;
+  overflow-x:auto;
+}
+.tab-btn{
+  background:none;
+  border:none;
+  color:#64748b;
+  padding:16px 20px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  white-space:nowrap;
+  transition:color .2s, border-color .2s;
+  flex-shrink:0;
+}
+.tab-btn.active{
+  color:#4f46e5;
+  border-bottom-color:#6366f1;
+}
+.tab-btn:hover:not(.active){color:#1e293b}
+
+.top-bar-right{margin-left:auto;display:flex;align-items:center;gap:12px;padding:8px 0;flex-shrink:0}
+
+/* Month dropdown */
+.month-wrap{display:flex;align-items:center;gap:8px}
+.month-label{font-size:12px;color:#64748b;font-weight:600}
+#month-select{
+  background:#ffffff;
+  border:1px solid #cbd5e1;
+  color:#334155;
+  padding:7px 32px 7px 14px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  outline:none;
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  transition:border-color .2s, box-shadow .2s;
+}
+#month-select:hover,#month-select:focus{
+  border-color:#6366f1;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.05);
+}
+#month-select option{background:#ffffff;color:#334155}
+
+.file-tag{font-size:11px;color:#64748b;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.btn-reset{
+  background:transparent;
+  border:1px solid #cbd5e1;
+  color:#475569;
+  padding:6px 14px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  transition: border-color .2s, color .2s;
+}
+.btn-reset:hover{border-color:#6366f1;color:#4f46e5}
+
+/* ── Selected month banner ── */
+.month-banner{
+  display:none;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  padding:10px 28px;
+  font-size:12px;
+  color:#1e40af;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+}
+.month-banner.visible{display:flex}
+.month-banner strong{color:#1e3a8a;font-weight:700}
+
+/* ── Content ── */
+.content{padding:24px 28px;max-width:1400px;margin:0 auto}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── KPI cards ── */
+.section-label{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:#64748b;
+  margin-bottom:12px;
+  margin-top:28px;
+}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:8px}
+.kpi-card{
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding:18px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+.kpi-card:hover{
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.05), 0 4px 6px -4px rgba(99, 102, 241, 0.05);
+  transform: translateY(-2px);
+}
+.kpi-label{font-size:11px;color:#475569;margin-bottom:8px;font-weight:600;letter-spacing:0.3px}
+.kpi-val{
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:-0.5px;
+  line-height:1.1;
+  color: #0f172a;
+}
+.kpi-val.good{
+  color: #10b981;
+}
+.kpi-val.warn{
+  color: #f59e0b;
+}
+.kpi-val.bad{
+  color: #ef4444;
+}
+.kpi-sub{font-size:10px;color:#64748b;margin-top:6px;font-weight:600}
+
+/* Dual-value KPI card */
+.kpi-dual{display:flex;flex-direction:column;gap:10px}
+.kpi-dual-row{display:flex;flex-direction:column}
+.kpi-dual-row .kpi-val{font-size:19px}
+.kpi-dual-row .kpi-sub{font-size:10px;color:#64748b;margin-top:3px;font-weight:600}
+.kpi-divider{border:none;border-top:1px solid #f1f5f9;margin:0}
+
+/* ── Charts ── */
+.charts-grid-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-top:16px}
+.charts-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:1000px){.charts-grid-3,.charts-grid-2{grid-template-columns:1fr}}
+.chart-card{
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding:20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+.chart-card:hover{
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.05), 0 4px 6px -4px rgba(99, 102, 241, 0.05);
+  transform: translateY(-1px);
+}
+.chart-card h3{font-size:13px;font-weight:700;color:#475569;margin-bottom:16px;letter-spacing: 0.3px}
+.chart-wrap{position:relative}
+.chart-wrap.h260{height:260px}
+.chart-wrap.h220{height:220px}
+.chart-wrap.h300{height:300px}
+
+/* ── Platform snapshot cards ── */
+.platform-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:8px}
+.platform-card{
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding:18px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+.platform-card:hover{
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.05), 0 4px 6px -4px rgba(99, 102, 241, 0.05);
+  transform: translateY(-2px);
+}
+.platform-name{font-size:13px;font-weight:800;color:#312e81;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.platform-stat{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #f1f5f9}
+.platform-stat:last-child{border:none}
+.platform-stat .lbl{color:#475569;font-weight:600}
+.platform-stat .val{color:#0f172a;font-weight:700}
+
+/* ── SKU table ── */
+.mini-table{width:100%;border-collapse:collapse;font-size:12px}
+.mini-table th{color:#475569;font-weight:700;text-align:left;padding:8px;border-bottom:1px solid #e2e8f0;letter-spacing: 0.2px}
+.mini-table td{padding:8px;color:#1e293b;border-bottom:1px solid #f1f5f9}
+.mini-table tr:last-child td{border:none}
+
+.error-msg{background:#ef444420;border:1px solid #ef4444;border-radius:8px;padding:12px 16px;color:#fca5a5;font-size:13px;margin:20px auto;max-width:500px;display:none;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Quick Commerce Dispatch</h1>
+  <span class="badge">Live Dashboard</span>
+</div>
+
+<!-- Upload -->
+<div id="upload-zone">
+  <div class="entry-container">
+    <!-- Local File Upload -->
+    <div class="upload-box" id="drop-zone">
+      <div class="icon">📦</div>
+      <h2>Drop your dispatch Excel here</h2>
+      <p>Supports the Quick Commerce Dispatch workbook — Instamart, Zepto, Blinkit, Dmart & Big Basket sheets</p>
+      <button class="btn" onclick="document.getElementById('file-input').click()">Choose File</button>
+      <input type="file" id="file-input" accept=".xlsx,.xls"/>
+      <p class="upload-note">Accepts .xlsx · .xls</p>
+    </div>
+
+    <!-- Google Sheets Integration -->
+    <div class="sheet-box">
+      <div class="icon">🟢</div>
+      <h2>Link Google Sheet</h2>
+      <p>Connect your live Google Sheet to automatically sync dispatch data. No manual file uploads needed!</p>
+      
+      <div class="sheet-input-wrap">
+        <input type="text" id="sheet-url" class="sheet-input" placeholder="Paste Google Sheet URL here..."/>
+        <button class="btn-sheet" id="btn-connect-sheet" onclick="connectGoogleSheet()">Connect Sheet</button>
+      </div>
+      
+      <div class="instructions-card">
+        <h4>📋 How to share your Google Sheet:</h4>
+        <ol style="margin-left: 14px; margin-top: 4px;">
+          <li>Open your Google Sheet.</li>
+          <li>Click the blue <strong>Share</strong> button (top right).</li>
+          <li>Under General Access, change to <strong>"Anyone with the link can view"</strong>.</li>
+          <li>Copy the URL from the browser's address bar and paste it here.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="error-msg" id="error-msg"></div>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p style="color:#64748b;font-size:14px">Reading your file…</p>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <!-- Tab bar -->
+  <div class="top-bar" id="tab-bar">
+    <!-- tab buttons injected by JS -->
+    <div class="top-bar-right">
+      <div id="sheet-sync-status" style="display:none; align-items:center; gap:8px; margin-right:12px;">
+        <span style="font-size:11px; font-weight:700; color:#10b981; display:flex; align-items:center; gap:4px;">
+          <span style="width:7px; height:7px; background:#10b981; border-radius:50%; display:inline-block; animation: pulse 2s infinite;"></span>
+          Google Sheet Connected
+        </span>
+        <button class="btn-reset" style="border-color:#10b981; color:#10b981;" onclick="syncGoogleSheet()" id="btn-sync-now">Sync Now</button>
+      </div>
+      <div class="month-wrap">
+        <span class="month-label">Month</span>
+        <select id="month-select" onchange="applyMonthFilter(this.value)">
+          <option value="all">All Months</option>
+        </select>
+      </div>
+      <span class="file-tag" id="file-tag"></span>
+      <button class="btn-reset" onclick="resetUpload()" id="btn-upload-reset">Upload new file</button>
+    </div>
+  </div>
+
+  <!-- Month filter banner -->
+  <div class="month-banner" id="month-banner">
+    Showing data for <strong id="banner-month"></strong> &nbsp;·&nbsp; Change dropdown above to switch months
+  </div>
+
+  <!-- Tab panels -->
+  <div class="content" id="tab-content"></div>
+</div>
+
+<script>
+// ── State ──
+let fullData   = null;   // entire upload response
+let activeTab  = 'summary';
+const charts   = {};     // Chart instances keyed by canvas id
+
+const COLORS = ['#6366f1','#10b981','#f59e0b','#ef4444','#3b82f6'];
+
+// ── Upload wiring ──
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag');
+  if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) uploadFile(fileInput.files[0]); });
+
+function uploadFile(file) {
+  document.getElementById('upload-zone').style.display = 'none';
+  document.getElementById('loading').style.display     = 'flex';
+  document.getElementById('dashboard').style.display   = 'none';
+  document.getElementById('error-msg').style.display   = 'none';
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fetch('/upload', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { showError(data.error); return; }
+      fullData = data;
+      bootstrapDashboard(data);
+    })
+    .catch(() => showError('Upload failed. Check the file and try again.'));
+}
+
+function connectGoogleSheet() {
+  const urlInput = document.getElementById('sheet-url');
+  const url = urlInput.value.trim();
+  if (!url) {
+    alert('Please paste your Google Sheet link first!');
+    return;
+  }
+
+  document.getElementById('upload-zone').style.display = 'none';
+  document.getElementById('loading').style.display     = 'flex';
+  document.getElementById('error-msg').style.display   = 'none';
+
+  fetch('/connect_sheet', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: url })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) { showError(data.error); return; }
+    fullData = data;
+    bootstrapDashboard(data);
+    urlInput.value = ''; // clear input
+  })
+  .catch(() => showError('Failed to connect Google Sheet. Please check sharing settings.'));
+}
+
+function syncGoogleSheet() {
+  const btn = document.getElementById('btn-sync-now');
+  const originalText = btn.textContent;
+  btn.textContent = 'Syncing...';
+  btn.disabled = true;
+
+  fetch('/sync_sheet', { method: 'POST' })
+  .then(r => r.json())
+  .then(data => {
+    btn.textContent = originalText;
+    btn.disabled = false;
+    if (data.error) {
+      alert('Sync failed: ' + data.error);
+      return;
+    }
+    fullData = data;
+    bootstrapDashboard(data);
+    
+    // Quick flashing visual effect to confirm success
+    const statusLight = document.querySelector('#sheet-sync-status span');
+    if (statusLight) {
+      statusLight.style.color = '#34d399';
+      setTimeout(() => { statusLight.style.color = '#10b981'; }, 1000);
+    }
+  })
+  .catch(() => {
+    btn.textContent = originalText;
+    btn.disabled = false;
+    alert('Sync connection error.');
+  });
+}
+
+function showError(msg) {
+  document.getElementById('loading').style.display     = 'none';
+  document.getElementById('upload-zone').style.display = 'flex';
+  const el = document.getElementById('error-msg');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+
+function resetUpload() {
+  const isSheet = fullData && fullData.sheet_url;
+  
+  if (isSheet) {
+    if (!confirm('Are you sure you want to disconnect from this Google Sheet?')) {
+      return;
+    }
+    fetch('/disconnect_sheet', { method: 'POST' })
+      .then(() => {
+        document.getElementById('dashboard').style.display   = 'none';
+        document.getElementById('upload-zone').style.display = 'flex';
+        document.getElementById('sheet-sync-status').style.display = 'none';
+        document.getElementById('btn-upload-reset').textContent = 'Upload new file';
+        fileInput.value = '';
+        fullData = null;
+      });
+  } else {
+    document.getElementById('dashboard').style.display   = 'none';
+    document.getElementById('upload-zone').style.display = 'flex';
+    document.getElementById('sheet-sync-status').style.display = 'none';
+    document.getElementById('btn-upload-reset').textContent = 'Upload new file';
+    fileInput.value = '';
+    fullData = null;
+  }
+}
+
+// ── Formatting ──
+function inr(v) {
+  v = Math.round(v);
+  if (v >= 1e7)  return '₹' + (v/1e7).toFixed(2) + ' Cr';
+  if (v >= 1e5)  return '₹' + (v/1e5).toFixed(2) + ' L';
+  if (v >= 1000) return '₹' + v.toLocaleString('en-IN');
+  return '₹' + v;
+}
+function qty(v) {
+  v = Math.round(v);
+  if (v >= 1e5) return (v/1e5).toFixed(2) + ' L';
+  return v.toLocaleString('en-IN');
+}
+function pct(v) { return (v||0).toFixed(1) + '%'; }
+
+// ── Formatting for Charts (Axes and Tooltips) ──
+function chartInr(v) {
+  return '₹' + Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function chartQty(v) {
+  return Math.round(v).toLocaleString('en-IN');
+}
+
+const chartTooltipCallback = {
+  label: function(context) {
+    let label = context.dataset.label || context.label || '';
+    if (label) {
+      label += ': ';
+    }
+    let val = context.raw;
+    if (typeof val === 'number') {
+      const datasetName = context.dataset.label || '';
+      const isCurrency = datasetName.toLowerCase().includes('value') || 
+                         datasetName.toLowerCase().includes('dn') || 
+                         datasetName.toLowerCase().includes('grn val') || 
+                         (datasetName.toLowerCase().includes('payment') && !datasetName.includes('%') && !datasetName.toLowerCase().includes('pct'));
+                         
+      const isPercent = datasetName.includes('%') || datasetName.toLowerCase().includes('percent') || datasetName.toLowerCase().includes('pct');
+      
+      if (isCurrency) {
+        label += chartInr(val);
+      } else if (isPercent) {
+        label += pct(val);
+      } else {
+        label += chartQty(val);
+      }
+    } else {
+      label += val;
+    }
+    return label;
+  }
+};
+
+function tickFormatter(value) {
+  if (this.type === 'category') {
+    return this.getLabelForValue(value);
+  }
+  if (typeof value === 'number') {
+    if (this.chart) {
+      const datasets = this.chart.data.datasets || [];
+      const isCurrency = datasets.some(ds => {
+        const label = (ds.label || '').toLowerCase();
+        return label.includes('value') || label.includes('dn') || (label.includes('payment') && !label.includes('%') && !label.includes('pct'));
+      });
+      if (isCurrency) return chartInr(value);
+    }
+    return chartQty(value);
+  }
+  return value;
+}
+
+const CX = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { 
+    legend: { labels: { color:'#475569', font:{family:"'Plus Jakarta Sans', sans-serif", size:11, weight:'600'}, boxWidth:12 } },
+    tooltip: { callbacks: chartTooltipCallback }
+  },
+  scales: {
+    x: { 
+      ticks:{
+        color:'#64748b', 
+        font:{family:"'Plus Jakarta Sans', sans-serif", size:10, weight:'600'},
+        callback: tickFormatter
+      }, 
+      grid:{color:'rgba(0, 0, 0, 0.05)'} 
+    },
+    y: { 
+      ticks:{
+        color:'#64748b', 
+        font:{family:"'Plus Jakarta Sans', sans-serif", size:10, weight:'600'},
+        callback: tickFormatter
+      }, 
+      grid:{color:'rgba(0, 0, 0, 0.06)'} 
+    },
+  }
+};
+const CX_DONUT = {
+  responsive: true, maintainAspectRatio: false, cutout: '65%',
+  plugins: { 
+    legend: { position:'bottom', labels:{ color:'#475569', font:{family:"'Plus Jakarta Sans', sans-serif", size:11, weight:'600'}, boxWidth:12 } },
+    tooltip: { callbacks: chartTooltipCallback }
+  },
+};
+
+function mkChart(id, config) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  const el = document.getElementById(id);
+  if (!el) return;
+  charts[id] = new Chart(el, config);
+}
+
+function kpiCard(label, value, sub, cls='') {
+  return `<div class="kpi-card">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-val ${cls}">${value}</div>
+    <div class="kpi-sub">${sub}</div>
+  </div>`;
+}
+
+function dualKpiCard(label, val1, sub1, val2, sub2) {
+  return `<div class="kpi-card">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-dual">
+      <div class="kpi-dual-row">
+        <div class="kpi-val">${val1}</div>
+        <div class="kpi-sub">${sub1}</div>
+      </div>
+      <hr class="kpi-divider"/>
+      <div class="kpi-dual-row">
+        <div class="kpi-val" style="color:#10b981">${val2}</div>
+        <div class="kpi-sub">${sub2}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Bootstrap: build tabs & panels once ──
+function bootstrapDashboard(data) {
+  document.getElementById('upload-zone').style.display = 'none';
+  document.getElementById('loading').style.display     = 'none';
+  document.getElementById('dashboard').style.display   = 'block';
+
+  // Toggle sync UI elements
+  const syncStatus = document.getElementById('sheet-sync-status');
+  const resetBtn = document.getElementById('btn-upload-reset');
+  if (data.sheet_url) {
+    syncStatus.style.display = 'flex';
+    resetBtn.textContent = 'Disconnect Google Sheet';
+    document.getElementById('file-tag').textContent = 'Live Google Sheet';
+  } else {
+    syncStatus.style.display = 'none';
+    resetBtn.textContent = 'Upload new file';
+    document.getElementById('file-tag').textContent = data.filename;
+  }
+
+  // Build month dropdown
+  const sel = document.getElementById('month-select');
+  sel.innerHTML = '<option value="all">All Months</option>';
+  (data.all_months || []).forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    sel.appendChild(opt);
+  });
+
+  // Build tabs
+  const tabBar = document.getElementById('tab-bar');
+  tabBar.querySelectorAll('.tab-btn').forEach(e => e.remove());
+
+  const tabs = [{ id:'summary', label:'All Platforms' },
+    ...data.platforms.map((p,i) => ({ id:'p'+i, label:p.platform }))];
+
+  tabs.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (t.id === activeTab ? ' active' : '');
+    btn.textContent = t.label;
+    btn.dataset.tab = t.id;
+    btn.addEventListener('click', () => switchTab(t.id));
+    tabBar.insertBefore(btn, tabBar.querySelector('.top-bar-right'));
+  });
+
+  // Build panel HTML shells (static structure — we only inject chart canvases here)
+  const content = document.getElementById('tab-content');
+  content.innerHTML = '';
+
+  // Summary panel
+  content.insertAdjacentHTML('beforeend', summaryPanelHTML());
+
+  // Platform panels
+  data.platforms.forEach((p, i) => {
+    content.insertAdjacentHTML('beforeend', platformPanelHTML(i));
+  });
+
+  // Render data into the shells
+  renderView(data.summary, data.platforms);
+}
+
+// ── Month filter ──
+function applyMonthFilter(month) {
+  if (!fullData) return;
+
+  const banner = document.getElementById('month-banner');
+  if (month === 'all') {
+    banner.classList.remove('visible');
+    renderView(fullData.summary, fullData.platforms);
+  } else {
+    const view = fullData.monthly_views[month];
+    if (!view) return;
+    document.getElementById('banner-month').textContent = month;
+    banner.classList.add('visible');
+    renderView(view.summary, view.platforms);
+  }
+}
+
+// ── Tab switching ──
+function switchTab(id) {
+  activeTab = id;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
+}
+
+// ── Render: update KPIs + charts for current data slice ──
+function renderView(summary, platforms) {
+  renderSummary(summary, platforms);
+  platforms.forEach((p, i) => renderPlatform(p, i));
+  // restore active tab
+  switchTab(activeTab);
+}
+
+// ─────────────────────────────────────────
+// SUMMARY
+// ─────────────────────────────────────────
+function summaryPanelHTML() {
+  return `<div class="tab-panel" id="panel-summary">
+    <div class="section-label">Overall Performance</div>
+    <div id="s-kpi-row1" class="kpi-row"></div>
+    <div id="s-kpi-row2" class="kpi-row"></div>
+    <div class="section-label" style="margin-top:28px">Platform Snapshot</div>
+    <div id="s-platform-cards" class="platform-grid"></div>
+    <div class="charts-grid-3">
+      <div class="chart-card"><h3>Dispatch vs GRN by Platform</h3><div class="chart-wrap h260"><canvas id="c-platform-bar"></canvas></div></div>
+      <div class="chart-card"><h3>Rejection Split</h3><div class="chart-wrap h260"><canvas id="c-rej-donut"></canvas></div></div>
+      <div class="chart-card"><h3>Payment Collected % by Platform</h3><div class="chart-wrap h260"><canvas id="c-pay-bar"></canvas></div></div>
+    </div>
+    <div class="charts-grid-2">
+      <div class="chart-card"><h3>Monthly Dispatch & GRN Trend</h3><div class="chart-wrap h260"><canvas id="c-monthly-line"></canvas></div></div>
+      <div class="chart-card"><h3>Monthly DN Value vs GRN Value</h3><div class="chart-wrap h260"><canvas id="c-monthly-val"></canvas></div></div>
+    </div>
+  </div>`;
+}
+
+function renderSummary(s, platforms) {
+  const k  = s.kpis;
+  const pc = s.platform_comparison;
+  const rs = s.rejection_split;
+
+  // KPI rows
+  document.getElementById('s-kpi-row1').innerHTML =
+    kpiCard('Ordered Qty',      qty(k.ordered),         'Total PO quantity') +
+    kpiCard('Dispatched Qty',   qty(k.dispatch),        'Units sent out') +
+    dualKpiCard('Dispatch Value', inr(k.dispatch_incl_gst), 'Incl. GST', inr(k.dispatch_excl_gst), 'Excl. GST') +
+    kpiCard('GRN Qty',          qty(k.grn),             'Units accepted by platforms') +
+    kpiCard('Fill Rate',        pct(k.fill_rate),       'Dispatch / Ordered',   k.fill_rate>=90?'good':k.fill_rate>=70?'warn':'bad') +
+    kpiCard('Acceptance Rate',  pct(k.acceptance_rate), 'GRN / Dispatched',     k.acceptance_rate>=90?'good':k.acceptance_rate>=70?'warn':'bad') +
+    kpiCard('Rejection Rate',   pct(k.rejection_rate),  'Rejected / Dispatched',k.rejection_rate<=5?'good':k.rejection_rate<=15?'warn':'bad');
+
+  document.getElementById('s-kpi-row2').innerHTML =
+    kpiCard('Total DN Value',   inr(k.dn_value),   'Debit Note raised') +
+    kpiCard('Total GRN Value',  inr(k.grn_value),  'Accepted by platforms') +
+    kpiCard('Payment Received', inr(k.payment),    'Collected so far') +
+    kpiCard('Payment %',        pct(k.payment_pct),'Payment / GRN Value', k.payment_pct>=80?'good':k.payment_pct>=50?'warn':'bad') +
+    kpiCard('Total Rejected',   qty(k.rejected),   'Damaged + Short + Excess') +
+    kpiCard('Damaged',          qty(k.damaged),    'Damaged units');
+
+  // Platform snapshot cards
+  document.getElementById('s-platform-cards').innerHTML = platforms.map((p, i) => `
+    <div class="platform-card">
+      <div class="platform-name"><span class="dot" style="background:${COLORS[i]}"></span>${p.platform}</div>
+      <div class="platform-stat"><span class="lbl">Dispatched</span>  <span class="val">${qty(p.kpis.dispatch)}</span></div>
+      <div class="platform-stat"><span class="lbl">GRN Qty</span>      <span class="val">${qty(p.kpis.grn)}</span></div>
+      <div class="platform-stat"><span class="lbl">Fill Rate</span>    <span class="val">${pct(p.kpis.fill_rate)}</span></div>
+      <div class="platform-stat"><span class="lbl">Accept Rate</span>  <span class="val">${pct(p.kpis.acceptance_rate)}</span></div>
+      <div class="platform-stat"><span class="lbl">GRN Value</span>    <span class="val">${inr(p.kpis.grn_value)}</span></div>
+      <div class="platform-stat"><span class="lbl">Payment %</span>    <span class="val">${pct(p.kpis.payment_pct)}</span></div>
+    </div>`).join('');
+
+  // Charts
+  mkChart('c-platform-bar', { type:'bar', data:{
+    labels: pc.labels,
+    datasets:[
+      {label:'Dispatched', data:pc.dispatch,  backgroundColor:'#6366f1cc'},
+      {label:'GRN Qty',    data:pc.grn,       backgroundColor:'#10b98199'},
+      {label:'Rejected',   data:pc.rejected,  backgroundColor:'#ef444499'},
+    ]}, options:{responsive:true, maintainAspectRatio:false, ...CX}});
+
+  const rsVals = Object.values(rs); const rsKeys = Object.keys(rs);
+  mkChart('c-rej-donut', { type:'doughnut', data:{
+    labels: rsKeys,
+    datasets:[{data:rsVals, backgroundColor:['#ef4444','#f59e0b','#6366f1'], borderWidth:0}]},
+    options:{...CX_DONUT}});
+
+  mkChart('c-pay-bar', { type:'bar', data:{
+    labels: pc.labels,
+    datasets:[{label:'Payment %', data:platforms.map(p=>p.kpis.payment_pct), backgroundColor:COLORS}]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks: chartTooltipCallback}},
+      scales:{x:{ticks:{color:'#64748b', font:{family:"'Plus Jakarta Sans', sans-serif", size:10, weight:'600'},callback:tickFormatter},grid:{color:'rgba(0, 0, 0, 0.05)'}},
+              y:{ticks:{color:'#64748b', font:{family:"'Plus Jakarta Sans', sans-serif", size:10, weight:'600'},callback:v=>v+'%'},grid:{color:'rgba(0, 0, 0, 0.06)'},max:110}}}});
+
+  const months = s.monthly || [];
+  mkChart('c-monthly-line', { type:'line', data:{
+    labels: months.map(m=>m.month),
+    datasets:[
+      {label:'Dispatched', data:months.map(m=>m.dispatch), borderColor:'#6366f1', backgroundColor:'#6366f120', tension:.4, fill:true},
+      {label:'GRN Qty',    data:months.map(m=>m.grn),      borderColor:'#10b981', backgroundColor:'#10b98120', tension:.4, fill:true},
+    ]}, options:{responsive:true, maintainAspectRatio:false, ...CX}});
+
+  mkChart('c-monthly-val', { type:'line', data:{
+    labels: months.map(m=>m.month),
+    datasets:[
+      {label:'DN Value',  data:months.map(m=>m.dn_val),  borderColor:'#f59e0b', tension:.4},
+      {label:'GRN Value', data:months.map(m=>m.grn_val), borderColor:'#10b981', tension:.4},
+    ]}, options:{responsive:true, maintainAspectRatio:false,
+      plugins: CX.plugins,
+      scales:{x:CX.scales.x, y:{ticks:{color:'#64748b', font:{family:"'Plus Jakarta Sans', sans-serif", size:10, weight:'600'},callback:v=>chartInr(v)},grid:{color:'rgba(0, 0, 0, 0.06)'}}}}});
+}
+
+// ─────────────────────────────────────────
+// PLATFORM PANELS
+// ─────────────────────────────────────────
+function platformPanelHTML(i) {
+  const id = 'p' + i;
+  return `<div class="tab-panel" id="panel-${id}">
+    <div class="section-label">Dispatch & Quality</div>
+    <div id="${id}-kpi1" class="kpi-row"></div>
+    <div id="${id}-kpi2" class="kpi-row"></div>
+    <div class="charts-grid-3">
+      <div class="chart-card"><h3>Monthly Dispatch & GRN</h3><div class="chart-wrap h260"><canvas id="${id}-monthly"></canvas></div></div>
+      <div class="chart-card"><h3>Rejection Breakdown</h3><div class="chart-wrap h260"><canvas id="${id}-rej"></canvas></div></div>
+      <div class="chart-card"><h3>GRN Status Split</h3><div class="chart-wrap h260"><canvas id="${id}-grn"></canvas></div></div>
+    </div>
+    <div class="charts-grid-2">
+      <div class="chart-card"><h3>Top Cities — Dispatch vs GRN</h3><div class="chart-wrap h300"><canvas id="${id}-city"></canvas></div></div>
+      <div class="chart-card">
+        <h3>Delivery Outcome</h3>
+        <div class="chart-wrap h220"><canvas id="${id}-log"></canvas></div>
+        <div id="${id}-skus"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPlatform(p, i) {
+  const id = 'p' + i;
+  const k  = p.kpis;
+  const rs = p.rejection_split;
+  const gs = p.grn_status;
+  const lr = p.log_remark;
+
+  document.getElementById(id+'-kpi1').innerHTML =
+    kpiCard('Ordered Qty',     qty(k.ordered),         'PO quantity') +
+    kpiCard('Dispatched Qty',  qty(k.dispatch),        'Units sent') +
+    dualKpiCard('Dispatch Value', inr(k.dispatch_incl_gst), 'Incl. GST', inr(k.dispatch_excl_gst), 'Excl. GST') +
+    kpiCard('GRN Qty',         qty(k.grn),             'Units accepted') +
+    kpiCard('Fill Rate',       pct(k.fill_rate),       'Dispatch / Ordered',    k.fill_rate>=90?'good':k.fill_rate>=70?'warn':'bad') +
+    kpiCard('Acceptance Rate', pct(k.acceptance_rate), 'GRN / Dispatched',      k.acceptance_rate>=90?'good':k.acceptance_rate>=70?'warn':'bad') +
+    kpiCard('Rejection Rate',  pct(k.rejection_rate),  'Rejected / Dispatched', k.rejection_rate<=5?'good':k.rejection_rate<=15?'warn':'bad');
+
+  document.getElementById(id+'-kpi2').innerHTML =
+    kpiCard('DN Value',         inr(k.dn_value),  'Debit Note raised') +
+    kpiCard('GRN Value',        inr(k.grn_value), 'Accepted value') +
+    kpiCard('Payment Received', inr(k.payment),   'Collected') +
+    kpiCard('Payment %',        pct(k.payment_pct),'Payment / GRN Value', k.payment_pct>=80?'good':k.payment_pct>=50?'warn':'bad') +
+    kpiCard('Total Rejected',   qty(k.rejected),  'Damaged + Short + Excess') +
+    kpiCard('Short Qty',        qty(k.short),     'Short units');
+
+  // Monthly
+  mkChart(id+'-monthly', { type:'line', data:{
+    labels: p.monthly.map(m=>m.month),
+    datasets:[
+      {label:'Dispatched', data:p.monthly.map(m=>m.dispatch), borderColor:'#6366f1', backgroundColor:'#6366f120', tension:.4, fill:true},
+      {label:'GRN Qty',    data:p.monthly.map(m=>m.grn),      borderColor:'#10b981', backgroundColor:'#10b98120', tension:.4, fill:true},
+    ]}, options:{responsive:true, maintainAspectRatio:false, ...CX}});
+
+  // Rejection donut
+  const rk = Object.keys(rs).filter((_,j)=>Object.values(rs)[j]>0);
+  const rv = rk.map(k2=>rs[k2]);
+  mkChart(id+'-rej', { type:'doughnut', data:{
+    labels:rk, datasets:[{data:rv, backgroundColor:['#ef4444','#f59e0b','#6366f1'], borderWidth:0}]},
+    options:{...CX_DONUT}});
+
+  // GRN status donut
+  const gk = Object.keys(gs); const gv = Object.values(gs);
+  mkChart(id+'-grn', { type:'doughnut', data:{
+    labels:gk, datasets:[{data:gv, backgroundColor:['#10b981','#ef4444','#f59e0b','#6366f1','#3b82f6'], borderWidth:0}]},
+    options:{...CX_DONUT}});
+
+  // City bar
+  mkChart(id+'-city', { type:'bar', data:{
+    labels: p.city.map(c=>c.city),
+    datasets:[
+      {label:'Dispatched', data:p.city.map(c=>c.dispatch), backgroundColor:'#6366f1cc'},
+      {label:'GRN Qty',    data:p.city.map(c=>c.grn),      backgroundColor:'#10b98199'},
+      {label:'Rejected',   data:p.city.map(c=>c.rejected),  backgroundColor:'#ef444499'},
+    ]}, options:{responsive:true, maintainAspectRatio:false, indexAxis:'y', ...CX}});
+
+  // Delivery outcome donut
+  const lk = Object.keys(lr); const lv = Object.values(lr);
+  const lc = lk.map(k2 => k2.toLowerCase().includes('deliver')?'#10b981':k2.toLowerCase().includes('rto')?'#ef4444':'#f59e0b');
+  mkChart(id+'-log', { type:'doughnut', data:{
+    labels:lk, datasets:[{data:lv, backgroundColor:lc, borderWidth:0}]},
+    options:{...CX_DONUT}});
+
+  // Top SKUs table
+  const skuEl = document.getElementById(id+'-skus');
+  if (skuEl && p.top_skus && p.top_skus.length) {
+    skuEl.innerHTML = `<h3 style="font-size:13px;font-weight:600;color:#94a3b8;margin:18px 0 8px">Top SKUs by Dispatch</h3>
+      <table class="mini-table"><thead><tr><th>Zeel Code</th><th style="text-align:right;padding-right:8px">Dispatched</th><th style="text-align:right;padding-right:8px">Rejected</th></tr></thead><tbody>
+      ${p.top_skus.map(s=>`<tr><td>${s.sku}</td><td style="text-align:right;padding-right:8px">${qty(s.dispatch)}</td><td style="text-align:right;padding-right:8px">${qty(s.rejected)}</td></tr>`).join('')}
+      </tbody></table>`;
+  } else if (skuEl) {
+    skuEl.innerHTML = '';
+  }
+}
+
+// ── Load persisted data on refresh ──
+fetch('/data').then(r=>r.json()).then(d=>{
+  if (!d.empty) { fullData = d; bootstrapDashboard(d); }
+});
+</script>
+</body>
+</html>
