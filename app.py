@@ -5,11 +5,18 @@ import pandas as pd
 from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Support both local 'templates' folder and Render root directory template setups
+app.jinja_loader = ChoiceLoader([
+    FileSystemLoader(os.path.join(app.root_path, 'templates')),
+    FileSystemLoader(app.root_path)
+])
 
 ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
 
