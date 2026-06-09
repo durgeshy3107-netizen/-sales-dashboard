@@ -24,6 +24,7 @@ dashboard_state = {'data': None}
 
 SHEET_CONFIG_PATH = os.path.join('uploads', 'google_sheet_config.txt')
 SHEET_LOCAL_PATH = os.path.join('uploads', 'google_sheet_latest.xlsx')
+DEFAULT_GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1soS5--lwUvYTlGZHCtovmUa_H7zl_RGoZFZ1b4ZeD7s/edit?gid=0#gid=0"
 
 def extract_spreadsheet_id(url):
     match = re.search(r'/spreadsheets/d/([a-zA-Z0-9-_]+)', url)
@@ -417,12 +418,23 @@ def connect_sheet():
 
 @app.route('/sync_sheet', methods=['POST'])
 def sync_sheet():
-    if not os.path.exists(SHEET_CONFIG_PATH):
+    sheet_url = None
+    if os.path.exists(SHEET_CONFIG_PATH):
+        try:
+            with open(SHEET_CONFIG_PATH, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+                if content != 'disconnected':
+                    sheet_url = content
+        except Exception:
+            pass
+    else:
+        sheet_url = DEFAULT_GOOGLE_SHEET_URL
+
+    if not sheet_url or sheet_url == 'disconnected':
         return jsonify({'error': 'No Google Sheet is currently connected.'}), 400
         
     try:
-        with open(SHEET_CONFIG_PATH, 'r', encoding='utf-8') as f:
-            url = f.read().strip()
+        url = sheet_url
             
         sheet_id = extract_spreadsheet_id(url)
         if not sheet_id:
@@ -439,11 +451,12 @@ def sync_sheet():
 
 @app.route('/disconnect_sheet', methods=['POST'])
 def disconnect_sheet():
-    if os.path.exists(SHEET_CONFIG_PATH):
-        try:
-            os.remove(SHEET_CONFIG_PATH)
-        except Exception:
-            pass
+    try:
+        os.makedirs('uploads', exist_ok=True)
+        with open(SHEET_CONFIG_PATH, 'w', encoding='utf-8') as f:
+            f.write('disconnected')
+    except Exception:
+        pass
     if os.path.exists(SHEET_LOCAL_PATH):
         try:
             os.remove(SHEET_LOCAL_PATH)
@@ -459,9 +472,14 @@ def get_data():
     if os.path.exists(SHEET_CONFIG_PATH):
         try:
             with open(SHEET_CONFIG_PATH, 'r', encoding='utf-8') as f:
-                sheet_url = f.read().strip()
+                content = f.read().strip()
+                if content != 'disconnected':
+                    sheet_url = content
         except Exception:
             pass
+    else:
+        # Fallback to default Google Sheet URL if no config file exists yet
+        sheet_url = DEFAULT_GOOGLE_SHEET_URL
 
     if dashboard_state['data'] is None:
         # Try loading Google Sheet first if config exists
