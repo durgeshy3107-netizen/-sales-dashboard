@@ -105,7 +105,7 @@ def process_sheet(df, platform_name, month_filter=None):
     incl_gst  = to_num(df['Including GST'])  if 'Including GST'  in df.columns else pd.Series(0, index=df.index)
     excl_gst  = to_num(df['Excluding GST'])  if 'Excluding GST'  in df.columns else pd.Series(0, index=df.index)
 
-    # Deduplicate by Invoice No â€” payment is invoice-level but rows repeat per SKU
+    # Deduplicate by Invoice No — payment is invoice-level but rows repeat per SKU
     if payment_col and 'Invoice No' in df.columns:
         df['_payment_raw'] = to_num(df[payment_col])
         tot_payment = float(
@@ -349,7 +349,7 @@ def parse_excel_file(filepath, filename):
     platforms_all = [process_sheet(df, display) for display, df in sheet_dfs.items()]
     summary_all   = build_summary(platforms_all)
 
-    # Per-month slices â€” pre-compute so frontend filters instantly
+    # Per-month slices — pre-compute so frontend filters instantly
     monthly_views = {}
     for month in all_months:
         p_month = [process_sheet(df, display, month_filter=month) for display, df in sheet_dfs.items()]
